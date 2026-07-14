@@ -1,0 +1,425 @@
+// OPTIMA VIP — Real estate platform schema
+// Prisma 7 (query compiler + driver adapter). Client is generated into src/generated/prisma.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  runtime      = "nodejs"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  REALTOR
+  CLIENT
+}
+
+/// Approval lifecycle for realtor accounts (manual admin approval required).
+enum RealtorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PropertyType {
+  RESIDENTIAL // residencial
+  COMMERCIAL // comercial
+  INDUSTRIAL // industrial
+  VACATION // vacacional
+  BUSINESS_GOODWILL // fondo de comercio
+  BUILDING // edificio
+  WAREHOUSE // galpón
+  HOTEL // hotel
+  FARM // finca
+  HOUSE_TOWNHOUSE // casa / townhouse
+}
+
+/// A property can have multiple active listing modes at once (array of enums).
+enum ListingMode {
+  SALE // venta
+  RENT // alquiler
+  BUY // compra (búsqueda de compra)
+}
+
+/// Operational status. AVAILABLE is public; the rest are admin-only and set via closure reports.
+enum PropertyStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  RENTED
+}
+
+/// Publication moderation status. New/edited realtor properties require admin approval.
+enum ApprovalStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum FloorLevel {
+  GROUND_FLOOR // planta baja
+  HIGH_FLOOR // piso alto
+}
+
+/// Type of closure a realtor reports.
+enum ClosureType {
+  RESERVED
+  SOLD
+  RENTED
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+enum NotificationType {
+  PROPERTY_APPROVED
+  PROPERTY_REJECTED
+  NEW_INQUIRY
+  REALTOR_APPROVED
+  REALTOR_REJECTED
+  NEW_MATCHING_PROPERTY
+  OPPORTUNITY_PRICE
+  CLOSURE_REPORTED
+  GENERAL
+}
+
+// ---------------------------------------------------------------------------
+// Auth (NextAuth / Auth.js) + Users
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String? // null for OAuth-only accounts
+
+  // Single role for now. The model is intentionally shaped so a `roles UserRole[]`
+  // can be added later for multi-role support (pending client confirmation).
+  role UserRole @default(CLIENT)
+
+  // Realtor-specific approval state. Null for non-realtors.
+  realtorStatus RealtorStatus?
+
+  // Public contact info (used for WhatsApp deep links, realtor profile, etc.)
+  phone    String?
+  whatsapp String?
+  bio      String?
+  agency   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+
+  // Domain relations
+  properties       Property[]       @relation("RealtorProperties")
+  favorites        Favorite[]
+  sentInquiries    ContactInquiry[] @relation("InquiryClient")
+  receivedInquiries ContactInquiry[] @relation("InquiryRealtor")
+  savedSearches    SavedSearch[]
+  notifications    Notification[]
+  closureReports   ClosureReport[]  @relation("ClosureRealtor")
+
+  @@index([role])
+  @@index([realtorStatus])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Catalogs (editable, not hardcoded)
+// ---------------------------------------------------------------------------
+
+/// Editable zone catalog (Lechería, El Tigre, Barcelona, Puerto La Cruz, ...).
+model Zone {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  region    String? // e.g. Anzoátegui
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  properties    Property[]
+  savedSearches SavedSearch[]
+}
+
+/// Editable amenity catalog (cámaras, aire acondicionado, ascensor, jacuzzi, ...).
+model Amenity {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String? // optional lucide icon name
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  properties Property[] @relation("PropertyAmenities")
+}
+
+// ---------------------------------------------------------------------------
+// Properties
+// ---------------------------------------------------------------------------
+
+model Property {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       String
+  description String @db.Text
+
+  type  PropertyType
+  modes ListingMode[] // many modes active at once
+
+  // Pricing
+  price    Decimal @db.Decimal(14, 2)
+  currency String  @default("USD")
+
+  // Areas & counts
+  landArea         Float? // m² de terreno
+  constructionArea Float? // m² de construcción
+  bedrooms         Int?
+  bathrooms        Int?
+  parkingSpaces    Int? // estacionamiento
+
+  // Ambientes
+  hasLivingDiningRoom Boolean @default(false) // sala-comedor
+  hasFamilyRoom       Boolean @default(false)
+  hasTerraceBalcony   Boolean @default(false) // terraza / balcón
+
+  // Building details
+  finishes   String? @db.Text // acabados (texto libre)
+  floorLevel FloorLevel?
+  ageYears   Int? // antigüedad
+
+  // Location
+  zoneId    String
+  zone      Zone    @relation(fields: [zoneId], references: [id])
+  address   String?
+  latitude  Float?
+  longitude Float?
+
+  // Media
+  images         PropertyImage[] // up to 20 (enforced in app logic)
+  videoUrl       String? // video embed / file url
+  virtualTourUrl String? // 360° tour embed url
+
+  // Amenities (many-to-many)
+  amenities Amenity[] @relation("PropertyAmenities")
+
+  // Status & moderation
+  status             PropertyStatus @default(AVAILABLE)
+  approvalStatus     ApprovalStatus @default(PENDING_REVIEW)
+  rejectionReason    String?
+  isOpportunityPrice Boolean        @default(false) // destacar / ordenar primero
+  viewsCount         Int            @default(0)
+
+  // Ownership
+  realtorId String
+  realtor   User   @relation("RealtorProperties", fields: [realtorId], references: [id])
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  favorites     Favorite[]
+  inquiries     ContactInquiry[]
+  closureReport ClosureReport?
+
+  @@index([type])
+  @@index([zoneId])
+  @@index([status])
+  @@index([approvalStatus])
+  @@index([isOpportunityPrice])
+  @@index([realtorId])
+  @@index([price])
+  @@index([createdAt])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  blobKey    String? // storage key for deletion (Vercel Blob)
+  alt        String?
+  order      Int      @default(0)
+  isCover    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
+}
+
+// ---------------------------------------------------------------------------
+// Favorites & Contact
+// ---------------------------------------------------------------------------
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+/// Contact form submissions. Linked to a property and/or a realtor. clientId set when logged in.
+model ContactInquiry {
+  id        String        @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  message   String        @db.Text
+  status    InquiryStatus @default(NEW)
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  realtorId String?
+  realtor   User?   @relation("InquiryRealtor", fields: [realtorId], references: [id], onDelete: SetNull)
+
+  clientId String?
+  client   User?   @relation("InquiryClient", fields: [clientId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([realtorId])
+  @@index([propertyId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Saved searches / alerts
+// ---------------------------------------------------------------------------
+
+model SavedSearch {
+  id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String?
+
+  // Criteria
+  type        PropertyType?
+  modes       ListingMode[]
+  zoneId      String?
+  zone        Zone?         @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  minPrice    Decimal?      @db.Decimal(14, 2)
+  maxPrice    Decimal?      @db.Decimal(14, 2)
+  minBedrooms Int?
+  minBathrooms Int?
+  minArea     Float?
+  // Extra/forward-compatible filters
+  filters     Json?
+
+  notifyNewMatches  Boolean   @default(true)
+  notifyOpportunity Boolean   @default(true)
+  lastNotifiedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([zoneId])
+}
+
+// ---------------------------------------------------------------------------
+// Closure reports (reservado / vendido / alquilado) + testimonials
+// ---------------------------------------------------------------------------
+
+model ClosureReport {
+  id         String   @id @default(cuid())
+  propertyId String   @unique
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  realtorId  String
+  realtor    User     @relation("ClosureRealtor", fields: [realtorId], references: [id])
+
+  type       ClosureType
+  finalPrice Decimal?    @db.Decimal(14, 2)
+  clientName String?
+  notes      String?     @db.Text
+  closedAt   DateTime    @default(now())
+
+  // Testimonial / success case
+  useAsTestimonial Boolean @default(false)
+  testimonialText  String? @db.Text
+  isTestimonialApproved Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([realtorId])
+  @@index([type])
+}
+
+// ---------------------------------------------------------------------------
+// In-app notifications
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    NotificationType
+  title   String
+  body    String?          @db.Text
+  linkUrl String?
+  isRead  Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
