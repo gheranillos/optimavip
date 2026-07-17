@@ -6,14 +6,14 @@ import { UserRole } from "@/generated/prisma/enums";
 
 // Client-side uploads to Vercel Blob.
 //
-// IMPORTANT: this route receives TWO kinds of requests:
-//  1. `blob.generate-client-token` — from the authenticated user's browser.
-//  2. `blob.upload-completed` — a server-to-server callback from Vercel Blob
-//     (NO user session). It is verified via the signed `x-vercel-signature`
-//     header by `handleUpload`.
+// We intentionally DO NOT define `onUploadCompleted`. That callback makes the
+// browser's `upload()` wait for a server-to-server confirmation from Vercel
+// Blob back to this route; if that callback can't complete (deployment
+// protection, cold start, etc.) the upload hangs forever. We persist images
+// when the property form is submitted, so the callback isn't needed.
 //
-// Therefore auth MUST be checked inside `onBeforeGenerateToken` only — never at
-// the top level, or the completion callback gets 401 and the upload hangs.
+// Auth is enforced in `onBeforeGenerateToken` (runs only for the token request,
+// which comes from the authenticated browser).
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
 
@@ -40,16 +40,13 @@ export async function POST(request: Request): Promise<NextResponse> {
             "video/mp4",
             "video/webm",
           ],
-          maximumSizeInBytes: 100 * 1024 * 1024, // 100 MB (covers short videos)
+          maximumSizeInBytes: 100 * 1024 * 1024, // 100 MB
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ userId: session.user.id }),
         };
       },
-      onUploadCompleted: async () => {
-        // Images are persisted when the property form is submitted, so nothing
-        // to do here. Must stay defined for the completion callback to resolve.
-      },
-    });
+      // No onUploadCompleted on purpose (see note above).
+    } as Parameters<typeof handleUpload>[0]);
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
