@@ -15,9 +15,14 @@ export async function emailInquiryReceived(opts: {
   message: string;
   propertyTitle?: string | null;
 }) {
+  const isGeneral = !opts.propertyTitle;
   const body = `
     <p>Hola ${opts.realtorName ?? ""},</p>
-    <p>Recibiste una nueva consulta${opts.propertyTitle ? ` por <strong>${opts.propertyTitle}</strong>` : ""}:</p>
+    <p>${
+      isGeneral
+        ? "Recibiste un <strong>nuevo contacto desde la web</strong>:"
+        : `Recibiste una nueva consulta por <strong>${opts.propertyTitle}</strong>:`
+    }</p>
     <ul>
       <li><strong>Nombre:</strong> ${opts.clientName}</li>
       <li><strong>Teléfono:</strong> ${opts.phone}</li>
@@ -28,9 +33,14 @@ export async function emailInquiryReceived(opts: {
   `;
   return sendEmail({
     to: opts.to,
-    subject: "Nueva consulta — OPTIMA VIP",
+    subject: isGeneral
+      ? "Nuevo contacto web — OPTIMA VIP"
+      : "Nueva consulta — OPTIMA VIP",
     replyTo: opts.email || undefined,
-    html: brandEmailLayout("Nueva consulta", body),
+    html: brandEmailLayout(
+      isGeneral ? "Nuevo contacto" : "Nueva consulta",
+      body
+    ),
   });
 }
 

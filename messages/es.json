@@ -44,7 +44,15 @@
     "opportunities": "Precios de oportunidad",
     "recent": "Recién publicadas",
     "browseByZone": "Explora por zona",
-    "ctaRealtor": "¿Eres asesor inmobiliario? Únete a OPTIMA VIP"
+    "ctaRealtor": "¿Eres asesor inmobiliario? Únete a OPTIMA VIP",
+    "interest": {
+      "title": "¿Quieres que te contactemos?",
+      "subtitle": "Déjanos tus datos. Un administrador de OPTIMA VIP te atenderá de forma personalizada. No necesitas registrarte.",
+      "point1": "Consulta por una propiedad o zona",
+      "point2": "Cuéntanos si quieres ofrecer tu inmueble",
+      "point3": "Te respondemos por WhatsApp o correo",
+      "defaultMessage": "Hola, me gustaría recibir atención personalizada de OPTIMA VIP."
+    }
   },
   "Property": {
     "forSale": "En venta",
@@ -372,6 +380,7 @@
   },
   "Footer": {
     "rights": "Todos los derechos reservados.",
+    "poweredBy": "Powered by",
     "locations": "Lechería · El Tigre · Barcelona · Puerto La Cruz",
     "company": "Empresa",
     "legal": "Legal",

@@ -66,7 +66,16 @@ export async function SiteFooter() {
         </div>
 
         <div className="mt-10 border-t pt-6 text-center text-xs text-muted-foreground">
-          © {year} OPTIMA VIP. {tFooter("rights")}
+          © {year} OPTIMA VIP. {tFooter("rights")}{" "}
+          {tFooter("poweredBy")}{" "}
+          <a
+            href="https://www.instagram.com/gheranillos/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+          >
+            @gheranillos
+          </a>
         </div>
       </div>
     </footer>

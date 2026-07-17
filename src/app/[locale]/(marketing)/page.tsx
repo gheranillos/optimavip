@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { searchProperties } from "@/lib/data/public-property";
 import { PropertyCard } from "@/components/property/property-card";
+import { InterestFormSection } from "@/components/marketing/interest-form-section";
 
 const ZONES = ["Lechería", "El Tigre", "Barcelona", "Puerto La Cruz"];
 
@@ -159,6 +160,8 @@ export default async function HomePage({
           </Button>
         </div>
       </section>
+
+      <InterestFormSection />
     </>
   );
 }

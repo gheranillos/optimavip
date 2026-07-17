@@ -44,7 +44,15 @@
     "opportunities": "Opportunity prices",
     "recent": "Recently listed",
     "browseByZone": "Browse by zone",
-    "ctaRealtor": "Are you a realtor? Join OPTIMA VIP"
+    "ctaRealtor": "Are you a realtor? Join OPTIMA VIP",
+    "interest": {
+      "title": "Want us to contact you?",
+      "subtitle": "Leave your details. An OPTIMA VIP administrator will follow up personally. No account required.",
+      "point1": "Ask about a property or area",
+      "point2": "Tell us if you want to list your property",
+      "point3": "We'll reply by WhatsApp or email",
+      "defaultMessage": "Hi, I'd like personalized assistance from OPTIMA VIP."
+    }
   },
   "Property": {
     "forSale": "For sale",
@@ -372,6 +380,7 @@
   },
   "Footer": {
     "rights": "All rights reserved.",
+    "poweredBy": "Powered by",
     "locations": "Lechería · El Tigre · Barcelona · Puerto La Cruz",
     "company": "Company",
     "legal": "Legal",

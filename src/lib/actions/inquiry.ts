@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
 import { emailInquiryReceived } from "@/lib/email-templates";
+import { notifyAdminTelegram } from "@/lib/telegram";
 import { revalidatePath } from "next/cache";
 
 import { inquirySchema, type InquiryInput } from "@/lib/validations/inquiry";
@@ -11,7 +12,7 @@ import {
   NotificationType,
   InquiryStatus,
 } from "@/generated/prisma/enums";
-import { isStaff } from "@/lib/roles";
+import { isStaff, STAFF_ROLES } from "@/lib/roles";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -35,6 +36,59 @@ export async function setInquiryStatus(
   await prisma.contactInquiry.update({ where: { id }, data: { status } });
   revalidatePath("/dashboard/inquiries");
   return { success: true };
+}
+
+async function notifyStaffGeneralLead(data: {
+  name: string;
+  phone: string;
+  email?: string | null;
+  message: string;
+}) {
+  const staff = await prisma.user.findMany({
+    where: { role: { in: STAFF_ROLES }, isActive: true },
+    select: { id: true, email: true, name: true },
+  });
+
+  await Promise.all(
+    staff.map((user) =>
+      createNotification({
+        userId: user.id,
+        type: NotificationType.NEW_INQUIRY,
+        title: "Nuevo contacto desde la web",
+        body: `${data.name} — ${data.phone}`,
+        linkUrl: "/dashboard/inquiries",
+      })
+    )
+  );
+
+  await Promise.all(
+    staff
+      .filter((u) => u.email)
+      .map((user) =>
+        emailInquiryReceived({
+          to: user.email!,
+          realtorName: user.name,
+          clientName: data.name,
+          phone: data.phone,
+          email: data.email || null,
+          message: data.message,
+          propertyTitle: null,
+        }).catch(() => undefined)
+      )
+  );
+
+  const tgLines = [
+    "<b>Nuevo contacto — OPTIMA VIP</b>",
+    `Nombre: ${data.name}`,
+    `Teléfono: ${data.phone}`,
+    data.email ? `Email: ${data.email}` : null,
+    "",
+    data.message,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  await notifyAdminTelegram(tgLines).catch(() => undefined);
 }
 
 export async function createInquiry(input: InquiryInput): Promise<ActionResult> {
@@ -75,6 +129,7 @@ export async function createInquiry(input: InquiryInput): Promise<ActionResult> 
     },
   });
 
+  // Property/realtor inquiry → notify that realtor.
   if (realtorId) {
     await createNotification({
       userId: realtorId,
@@ -101,7 +156,16 @@ export async function createInquiry(input: InquiryInput): Promise<ActionResult> 
         propertyTitle,
       }).catch(() => undefined);
     }
+  } else {
+    // General web lead (home / contact) → staff + Telegram.
+    await notifyStaffGeneralLead({
+      name: data.name,
+      phone: data.phone,
+      email: data.email || null,
+      message: data.message,
+    });
   }
 
+  revalidatePath("/dashboard/inquiries");
   return { success: true };
 }
