@@ -6,7 +6,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { slugify, randomSuffix } from "@/lib/slug";
 import { createNotification } from "@/lib/notifications";
-import { sendEmail } from "@/lib/email";
+import {
+  emailPropertyApproved,
+  emailPropertyRejected,
+} from "@/lib/email-templates";
 import {
   propertyFormSchema,
   rejectPropertySchema,
@@ -231,10 +234,11 @@ export async function approveProperty(id: string): Promise<ActionResult> {
     select: { email: true, name: true },
   });
   if (realtor?.email) {
-    await sendEmail({
+    await emailPropertyApproved({
       to: realtor.email,
-      subject: "Tu propiedad fue aprobada — OPTIMA VIP",
-      html: `<p>Hola ${realtor.name ?? ""},</p><p>Tu propiedad <strong>${property.title}</strong> fue aprobada y ya es visible al público.</p>`,
+      name: realtor.name,
+      propertyTitle: property.title,
+      propertySlug: property.slug,
     }).catch(() => undefined);
   }
 
@@ -273,6 +277,19 @@ export async function rejectProperty(
     body: `${property.title} — ${reason}`,
     linkUrl: `/dashboard/properties`,
   });
+
+  const realtor = await prisma.user.findUnique({
+    where: { id: property.realtorId },
+    select: { email: true, name: true },
+  });
+  if (realtor?.email) {
+    await emailPropertyRejected({
+      to: realtor.email,
+      name: realtor.name,
+      propertyTitle: property.title,
+      reason: parsed.data.reason,
+    }).catch(() => undefined);
+  }
 
   revalidatePath("/dashboard/properties");
   return { success: true };

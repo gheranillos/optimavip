@@ -132,7 +132,20 @@
     "haveAccount": "¿Ya tienes cuenta?",
     "realtorPending": "Tu cuenta de asesor está pendiente de aprobación por un administrador.",
     "invalidCredentials": "Correo o contraseña incorrectos.",
-    "registerSuccess": "Cuenta creada correctamente."
+    "registerSuccess": "Cuenta creada correctamente.",
+    "forgotLink": "¿Olvidaste tu contraseña?",
+    "forgotTitle": "Recuperar contraseña",
+    "forgotSubtitle": "Te enviaremos un enlace a tu correo para restablecerla.",
+    "forgotButton": "Enviar enlace",
+    "forgotSent": "Si el correo existe, enviamos un enlace",
+    "forgotSentDetail": "Revisa tu bandeja de entrada (y spam). El enlace expira en 1 hora.",
+    "resetTitle": "Nueva contraseña",
+    "resetSubtitle": "Elige una contraseña nueva para tu cuenta.",
+    "resetButton": "Guardar contraseña",
+    "resetSuccess": "Contraseña actualizada. Ya puedes iniciar sesión.",
+    "resetInvalid": "El enlace no es válido o ya expiró.",
+    "newPassword": "Nueva contraseña",
+    "backToLogin": "Volver a iniciar sesión"
   },
   "Dashboard": {
     "overview": "Resumen",
@@ -313,7 +326,14 @@
     "agency": "Agencia",
     "bio": "Biografía",
     "save": "Guardar cambios",
-    "saved": "Perfil actualizado"
+    "saved": "Perfil actualizado",
+    "passwordTitle": "Cambiar contraseña",
+    "passwordDesc": "Usa una contraseña de al menos 8 caracteres.",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "changePassword": "Actualizar contraseña",
+    "passwordChanged": "Contraseña actualizada"
   },
   "Users": {
     "title": "Usuarios",

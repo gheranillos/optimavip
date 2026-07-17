@@ -182,6 +182,17 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+/// One-time tokens for "forgot password" flow.
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
 // ---------------------------------------------------------------------------
 // Catalogs (editable, not hardcoded)
 // ---------------------------------------------------------------------------

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { UserRole } from "@/generated/prisma/enums";
 import { isStaff } from "@/lib/roles";
 import { ProfileForm } from "@/components/dashboard/profile-form";
+import { ChangePasswordForm } from "@/components/dashboard/change-password-form";
 
 export default async function SettingsPage({
   params,
@@ -48,6 +49,7 @@ export default async function SettingsPage({
           bio: user.bio ?? "",
         }}
       />
+      <ChangePasswordForm />
     </div>
   );
 }

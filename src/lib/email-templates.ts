@@ -124,3 +124,63 @@ export async function emailAdminCreated(opts: {
     html: brandEmailLayout("Bienvenido al panel", body),
   });
 }
+
+export async function emailPasswordReset(opts: {
+  to: string;
+  name?: string | null;
+  resetUrl: string;
+}) {
+  const body = `
+    <p>Hola ${opts.name ?? ""},</p>
+    <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+    <p><a href="${opts.resetUrl}">Restablecer contraseña</a></p>
+    <p>El enlace expira en 1 hora. Si no solicitaste esto, ignora este correo.</p>
+  `;
+  return sendEmail({
+    to: opts.to,
+    subject: "Restablecer contraseña — OPTIMA VIP",
+    html: brandEmailLayout("Restablecer contraseña", body),
+  });
+}
+
+export async function emailPropertyApproved(opts: {
+  to: string;
+  name?: string | null;
+  propertyTitle: string;
+  propertySlug: string;
+}) {
+  const body = `
+    <p>Hola ${opts.name ?? ""},</p>
+    <p>Tu propiedad <strong>${opts.propertyTitle}</strong> fue <strong>aprobada</strong> y ya es visible al público.</p>
+    <p>
+      <a href="${appUrl()}/es/properties/${opts.propertySlug}">Ver publicación</a>
+      ·
+      <a href="${appUrl()}/es/dashboard/properties">Ir al panel</a>
+    </p>
+  `;
+  return sendEmail({
+    to: opts.to,
+    subject: "Propiedad aprobada — OPTIMA VIP",
+    html: brandEmailLayout("Propiedad aprobada", body),
+  });
+}
+
+export async function emailPropertyRejected(opts: {
+  to: string;
+  name?: string | null;
+  propertyTitle: string;
+  reason: string;
+}) {
+  const body = `
+    <p>Hola ${opts.name ?? ""},</p>
+    <p>Tu propiedad <strong>${opts.propertyTitle}</strong> fue <strong>rechazada</strong>.</p>
+    <p><strong>Motivo:</strong> ${opts.reason}</p>
+    <p>Puedes editarla y volver a enviarla a revisión desde el panel.</p>
+    <p><a href="${appUrl()}/es/dashboard/properties">Ir al panel</a></p>
+  `;
+  return sendEmail({
+    to: opts.to,
+    subject: "Propiedad rechazada — OPTIMA VIP",
+    html: brandEmailLayout("Propiedad rechazada", body),
+  });
+}

@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { Link, useRouter } from "@/i18n/navigation";
-import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { resetPassword } from "@/lib/actions/password";
+import {
+  resetPasswordSchema,
+  type ResetPasswordInput,
+} from "@/lib/validations/password";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,32 +24,41 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-export function LoginForm() {
+export function ResetPasswordForm({ token }: { token: string }) {
   const t = useTranslations("Auth");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+  const form = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      token,
+      newPassword: "",
+      confirmPassword: "",
+    },
   });
 
-  async function onSubmit(values: LoginInput) {
+  async function onSubmit(values: ResetPasswordInput) {
     setIsLoading(true);
-    const res = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    });
+    const res = await resetPassword(values);
     setIsLoading(false);
-
-    if (res?.error) {
-      toast.error(t("invalidCredentials"));
+    if (!res.success) {
+      toast.error(res.error);
       return;
     }
+    toast.success(t("resetSuccess"));
+    router.push("/login");
+  }
 
-    router.push("/dashboard");
-    router.refresh();
+  if (!token) {
+    return (
+      <div className="space-y-3 text-sm">
+        <p className="text-destructive">{t("resetInvalid")}</p>
+        <Link href="/forgot-password" className="font-medium text-primary hover:underline">
+          {t("forgotLink")}
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -54,12 +66,16 @@ export function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="email"
+          name="newPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("email")}</FormLabel>
+              <FormLabel>{t("newPassword")}</FormLabel>
               <FormControl>
-                <Input type="email" autoComplete="email" {...field} />
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,22 +83,14 @@ export function LoginForm() {
         />
         <FormField
           control={form.control}
-          name="password"
+          name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center justify-between gap-2">
-                <FormLabel>{t("password")}</FormLabel>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-primary hover:underline"
-                >
-                  {t("forgotLink")}
-                </Link>
-              </div>
+              <FormLabel>{t("confirmPassword")}</FormLabel>
               <FormControl>
                 <Input
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   {...field}
                 />
               </FormControl>
@@ -92,7 +100,7 @@ export function LoginForm() {
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? <Loader2 className="size-4 animate-spin" /> : null}
-          {t("loginButton")}
+          {t("resetButton")}
         </Button>
       </form>
     </Form>
