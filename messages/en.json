@@ -226,6 +226,17 @@
     "deleteTitle": "Delete property",
     "deleteDesc": "This action cannot be undone."
   },
+  "Contact": {
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send inquiry",
+    "sent": "Inquiry sent",
+    "sentDetail": "Thank you! Your inquiry was sent. The realtor will contact you soon.",
+    "optional": "optional",
+    "defaultMessage": "Hi, I'm interested in the property \"{title}\". Could you send me more information?"
+  },
   "Footer": {
     "rights": "All rights reserved.",
     "locations": "Lechería · El Tigre · Barcelona · Puerto La Cruz",

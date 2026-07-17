@@ -226,6 +226,17 @@
     "deleteTitle": "Eliminar propiedad",
     "deleteDesc": "Esta acción no se puede deshacer."
   },
+  "Contact": {
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "message": "Mensaje",
+    "send": "Enviar consulta",
+    "sent": "Consulta enviada",
+    "sentDetail": "¡Gracias! Tu consulta fue enviada. El asesor se pondrá en contacto contigo.",
+    "optional": "opcional",
+    "defaultMessage": "Hola, me interesa la propiedad \"{title}\". ¿Podrían darme más información?"
+  },
   "Footer": {
     "rights": "Todos los derechos reservados.",
     "locations": "Lechería · El Tigre · Barcelona · Puerto La Cruz",

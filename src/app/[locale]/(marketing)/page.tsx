@@ -1,9 +1,18 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Search, ShieldCheck, Building2, Globe2, MapPin } from "lucide-react";
+import {
+  Search,
+  ShieldCheck,
+  Building2,
+  Globe2,
+  MapPin,
+  ArrowRight,
+} from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { searchProperties } from "@/lib/data/public-property";
+import { PropertyCard } from "@/components/property/property-card";
 
 const ZONES = ["Lechería", "El Tigre", "Barcelona", "Puerto La Cruz"];
 
@@ -15,10 +24,12 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [tHome, tNav] = await Promise.all([
+  const [tHome, tNav, recent] = await Promise.all([
     getTranslations("Home"),
     getTranslations("Nav"),
+    searchProperties({ sort: "recent", page: 1 }),
   ]);
+  const featured = recent.items.slice(0, 6);
 
   return (
     <>
@@ -87,6 +98,28 @@ export default async function HomePage({
           ))}
         </div>
       </section>
+
+      {/* Recently listed */}
+      {featured.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">
+              {tHome("recent")}
+            </h2>
+            <Button asChild variant="ghost">
+              <Link href="/properties">
+                {tHome("featured")}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((item) => (
+              <PropertyCard key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Zones */}
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
