@@ -30,6 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: email.toLowerCase() },
         });
         if (!user?.passwordHash) return null;
+        if (!user.isActive) return null;
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
@@ -57,12 +58,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.id && (trigger === "update" || !user)) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, realtorStatus: true },
+          select: { role: true, realtorStatus: true, isActive: true },
         });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.realtorStatus = dbUser.realtorStatus;
+        if (!dbUser || !dbUser.isActive) {
+          token.role = undefined;
+          token.realtorStatus = null;
+          return token;
         }
+        token.role = dbUser.role;
+        token.realtorStatus = dbUser.realtorStatus;
       }
 
       return token;

@@ -10,16 +10,16 @@ import {
   emailRealtorRejected,
 } from "@/lib/email-templates";
 import {
-  UserRole,
   RealtorStatus,
   NotificationType,
 } from "@/generated/prisma/enums";
+import { isStaff } from "@/lib/roles";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
 async function requireAdminActor() {
   const session = await auth();
-  if (!session?.user || session.user.role !== UserRole.ADMIN) return null;
+  if (!session?.user || !isStaff(session.user.role)) return null;
   return session.user;
 }
 

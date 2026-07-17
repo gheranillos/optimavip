@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { UserRole } from "@/generated/prisma/enums";
 import type { PropertyFormFields } from "@/components/dashboard/property-form";
+import { isStaff } from "@/lib/roles";
 
 export async function getFormCatalogs() {
   const [zones, amenities] = await Promise.all([
@@ -23,7 +24,7 @@ export async function listDashboardProperties(
   role: UserRole
 ) {
   return prisma.property.findMany({
-    where: role === UserRole.ADMIN ? {} : { realtorId: userId },
+    where: isStaff(role) ? {} : { realtorId: userId },
     orderBy: [{ createdAt: "desc" }],
     select: {
       id: true,
@@ -70,7 +71,7 @@ export async function getPropertyForEdit(
   });
 
   if (!property) return null;
-  if (role !== UserRole.ADMIN && property.realtorId !== userId) return null;
+  if (!isStaff(role) && property.realtorId !== userId) return null;
 
   const toStr = (v: number | null) => (v === null ? "" : String(v));
 

@@ -9,9 +9,9 @@ import { revalidatePath } from "next/cache";
 import { inquirySchema, type InquiryInput } from "@/lib/validations/inquiry";
 import {
   NotificationType,
-  UserRole,
   InquiryStatus,
 } from "@/generated/prisma/enums";
+import { isStaff } from "@/lib/roles";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -28,8 +28,7 @@ export async function setInquiryStatus(
   });
   if (!inquiry) return { success: false, error: "No encontrada" };
 
-  const isAdmin = session.user.role === UserRole.ADMIN;
-  if (!isAdmin && inquiry.realtorId !== session.user.id) {
+  if (!isStaff(session.user.role) && inquiry.realtorId !== session.user.id) {
     return { success: false, error: "No autorizado" };
   }
 

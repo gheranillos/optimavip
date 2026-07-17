@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
 import { UserRole, ClosureType } from "@/generated/prisma/enums";
 import { formatPrice } from "@/lib/format";
+import { isStaff } from "@/lib/roles";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TestimonialApprove } from "@/components/dashboard/testimonial-approve";
@@ -17,8 +18,12 @@ export default async function ClosuresPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const user = await requireRole([UserRole.ADMIN, UserRole.REALTOR]);
-  const isAdmin = user.role === UserRole.ADMIN;
+  const user = await requireRole([
+    UserRole.DEVELOPER,
+    UserRole.ADMIN,
+    UserRole.REALTOR,
+  ]);
+  const isAdmin = isStaff(user.role);
   const t = await getTranslations("Closures");
 
   const closures = await prisma.closureReport.findMany({

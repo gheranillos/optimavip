@@ -7,11 +7,11 @@ import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
 import { closureSchema, type ClosureInput } from "@/lib/validations/closure";
 import {
-  UserRole,
   ClosureType,
   PropertyStatus,
   NotificationType,
 } from "@/generated/prisma/enums";
+import { isStaff, STAFF_ROLES } from "@/lib/roles";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -40,8 +40,7 @@ export async function reportClosure(input: ClosureInput): Promise<ActionResult> 
   });
   if (!property) return { success: false, error: "Propiedad no encontrada" };
 
-  const isAdmin = session.user.role === UserRole.ADMIN;
-  if (!isAdmin && property.realtorId !== session.user.id) {
+  if (!isStaff(session.user.role) && property.realtorId !== session.user.id) {
     return { success: false, error: "No autorizado" };
   }
 
@@ -73,9 +72,9 @@ export async function reportClosure(input: ClosureInput): Promise<ActionResult> 
     }),
   ]);
 
-  // Notify admins about the closure.
+  // Notify staff about the closure.
   const admins = await prisma.user.findMany({
-    where: { role: UserRole.ADMIN },
+    where: { role: { in: STAFF_ROLES }, isActive: true },
     select: { id: true },
   });
   await Promise.all(
@@ -100,7 +99,7 @@ export async function setTestimonialApproved(
   approved: boolean
 ): Promise<ActionResult> {
   const session = await auth();
-  if (!session?.user || session.user.role !== UserRole.ADMIN) {
+  if (!session?.user || !isStaff(session.user.role)) {
     return { success: false, error: "No autorizado" };
   }
 

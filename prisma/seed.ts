@@ -67,20 +67,25 @@ async function main() {
   const adminName = process.env.SEED_ADMIN_NAME ?? "Administrador OPTIMA VIP";
 
   if (adminPassword) {
-    console.log(`Seeding admin user (${adminEmail})...`);
+    console.log(`Seeding developer user (${adminEmail})...`);
     const passwordHash = await bcrypt.hash(adminPassword, 12);
     await prisma.user.upsert({
       where: { email: adminEmail },
-      update: { role: UserRole.ADMIN, realtorStatus: null },
+      update: {
+        role: UserRole.DEVELOPER,
+        realtorStatus: null,
+        isActive: true,
+      },
       create: {
         email: adminEmail,
         name: adminName,
         passwordHash,
-        role: UserRole.ADMIN,
+        role: UserRole.DEVELOPER,
+        isActive: true,
       },
     });
   } else {
-    console.warn("SEED_ADMIN_PASSWORD not set — skipping admin creation.");
+    console.warn("SEED_ADMIN_PASSWORD not set — skipping developer creation.");
   }
 
   console.log("Seed complete.");

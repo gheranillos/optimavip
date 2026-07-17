@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import { isStaff } from "@/lib/roles";
 
 // Client-side uploads to Vercel Blob.
 //
@@ -25,7 +26,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         const session = await auth();
         if (
           !session?.user ||
-          (session.user.role !== UserRole.ADMIN &&
+          (!isStaff(session.user.role) &&
             session.user.role !== UserRole.REALTOR)
         ) {
           throw new Error("No autorizado para subir archivos");

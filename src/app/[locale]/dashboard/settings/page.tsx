@@ -3,6 +3,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
 import { UserRole } from "@/generated/prisma/enums";
+import { isStaff } from "@/lib/roles";
 import { ProfileForm } from "@/components/dashboard/profile-form";
 
 export default async function SettingsPage({
@@ -37,7 +38,7 @@ export default async function SettingsPage({
       </div>
       <ProfileForm
         showAgency={
-          user.role === UserRole.REALTOR || user.role === UserRole.ADMIN
+          user.role === UserRole.REALTOR || isStaff(user.role)
         }
         defaults={{
           name: user.name ?? "",

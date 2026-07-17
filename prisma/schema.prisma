@@ -17,6 +17,7 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 enum UserRole {
+  DEVELOPER
   ADMIN
   REALTOR
   CLIENT
@@ -112,6 +113,9 @@ model User {
 
   // Realtor-specific approval state. Null for non-realtors.
   realtorStatus RealtorStatus?
+
+  /// Soft disable: inactive users cannot sign in.
+  isActive Boolean @default(true)
 
   // Public contact info (used for WhatsApp deep links, realtor profile, etc.)
   phone    String?

@@ -92,3 +92,25 @@ export async function emailRealtorRejected(opts: {
     html: brandEmailLayout("Solicitud de asesor", body),
   });
 }
+
+export async function emailAdminCreated(opts: {
+  to: string;
+  name?: string | null;
+  temporaryPassword: string;
+}) {
+  const body = `
+    <p>Hola ${opts.name ?? ""},</p>
+    <p>Se creó tu cuenta de <strong>administrador</strong> en OPTIMA VIP.</p>
+    <ul>
+      <li><strong>Correo:</strong> ${opts.to}</li>
+      <li><strong>Contraseña temporal:</strong> ${opts.temporaryPassword}</li>
+    </ul>
+    <p>Te recomendamos cambiarla al iniciar sesión.</p>
+    <p><a href="${appUrl()}/es/login">Iniciar sesión</a></p>
+  `;
+  return sendEmail({
+    to: opts.to,
+    subject: "Cuenta de administrador — OPTIMA VIP",
+    html: brandEmailLayout("Bienvenido al panel", body),
+  });
+}

@@ -4,6 +4,7 @@ import { MessageSquare, Mail, Phone } from "lucide-react";
 import { requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
 import { UserRole, InquiryStatus } from "@/generated/prisma/enums";
+import { isStaff } from "@/lib/roles";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { InquiryActions } from "@/components/dashboard/inquiry-actions";
@@ -22,11 +23,15 @@ export default async function InquiriesPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const user = await requireRole([UserRole.ADMIN, UserRole.REALTOR]);
+  const user = await requireRole([
+    UserRole.DEVELOPER,
+    UserRole.ADMIN,
+    UserRole.REALTOR,
+  ]);
   const t = await getTranslations("Inquiries");
 
   const inquiries = await prisma.contactInquiry.findMany({
-    where: user.role === UserRole.ADMIN ? {} : { realtorId: user.id },
+    where: isStaff(user.role) ? {} : { realtorId: user.id },
     orderBy: { createdAt: "desc" },
     take: 200,
     select: {

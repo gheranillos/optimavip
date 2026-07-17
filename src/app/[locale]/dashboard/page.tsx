@@ -6,10 +6,11 @@ import { prisma } from "@/lib/db";
 import { UserRole, RealtorStatus, ApprovalStatus } from "@/generated/prisma/enums";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RealtorPendingCard } from "@/components/dashboard/realtor-pending-card";
+import { isStaff } from "@/lib/roles";
 
 async function getStats(userId: string, role: UserRole) {
   try {
-    if (role === UserRole.ADMIN) {
+    if (isStaff(role)) {
       const [total, pending, inquiries] = await Promise.all([
         prisma.property.count(),
         prisma.property.count({

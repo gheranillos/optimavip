@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { UserRole, RealtorStatus } from "@/generated/prisma/enums";
+import { isStaff, STAFF_ROLES } from "@/lib/roles";
 
 /**
  * Returns the current session, or null. Use in server components / actions.
@@ -46,18 +47,24 @@ export async function requireRole(roles: UserRole[]) {
   return user;
 }
 
+/** ADMIN or DEVELOPER — business moderation. */
 export async function requireAdmin() {
-  return requireRole([UserRole.ADMIN]);
+  return requireRole(STAFF_ROLES);
+}
+
+/** DEVELOPER only — manage admin accounts. */
+export async function requireDeveloper() {
+  return requireRole([UserRole.DEVELOPER]);
 }
 
 /**
- * Requires an APPROVED realtor (or admin). Pending realtors are redirected to a
+ * Requires an APPROVED realtor (or staff). Pending realtors are redirected to a
  * "pending approval" screen.
  */
 export async function requireApprovedRealtor() {
   const user = await requireUser();
 
-  if (user.role === UserRole.ADMIN) return user;
+  if (isStaff(user.role)) return user;
 
   if (user.role !== UserRole.REALTOR) {
     redirect("/");

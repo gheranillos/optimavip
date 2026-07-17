@@ -18,6 +18,7 @@ import {
   ApprovalStatus,
   NotificationType,
 } from "@/generated/prisma/enums";
+import { isStaff, STAFF_ROLES } from "@/lib/roles";
 
 type ActionResult<T = undefined> =
   | { success: true; data?: T }
@@ -30,7 +31,7 @@ async function getActor() {
 }
 
 function canOperate(role: UserRole, realtorStatus: RealtorStatus | null) {
-  if (role === UserRole.ADMIN) return true;
+  if (isStaff(role)) return true;
   if (role === UserRole.REALTOR && realtorStatus === RealtorStatus.APPROVED)
     return true;
   return false;
@@ -80,7 +81,7 @@ export async function createProperty(
   }
   const values = parsed.data;
 
-  const isAdmin = actor.role === UserRole.ADMIN;
+  const staff = isStaff(actor.role);
   const slug = `${slugify(values.title)}-${randomSuffix()}`;
 
   const property = await prisma.property.create({
@@ -88,10 +89,10 @@ export async function createProperty(
       ...buildData(values),
       slug,
       realtorId: actor.id,
-      approvalStatus: isAdmin
+      approvalStatus: staff
         ? ApprovalStatus.APPROVED
         : ApprovalStatus.PENDING_REVIEW,
-      publishedAt: isAdmin ? new Date() : null,
+      publishedAt: staff ? new Date() : null,
       amenities: { connect: values.amenityIds.map((id) => ({ id })) },
       images: {
         create: values.images.map((img, index) => ({
@@ -106,10 +107,10 @@ export async function createProperty(
     select: { id: true },
   });
 
-  // Notify admins of a new submission awaiting review.
-  if (!isAdmin) {
+  // Notify staff of a new submission awaiting review.
+  if (!staff) {
     const admins = await prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: { in: STAFF_ROLES }, isActive: true },
       select: { id: true },
     });
     await Promise.all(
@@ -142,9 +143,9 @@ export async function updateProperty(
   });
   if (!existing) return { success: false, error: "Propiedad no encontrada" };
 
-  const isAdmin = actor.role === UserRole.ADMIN;
+  const staff = isStaff(actor.role);
   const isOwner = existing.realtorId === actor.id;
-  if (!isAdmin && !(isOwner && canOperate(actor.role, actor.realtorStatus))) {
+  if (!staff && !(isOwner && canOperate(actor.role, actor.realtorStatus))) {
     return { success: false, error: "No autorizado" };
   }
 
@@ -160,8 +161,8 @@ export async function updateProperty(
       where: { id },
       data: {
         ...buildData(values),
-        // Realtor edits go back to review; admin edits keep current status.
-        ...(isAdmin
+        // Realtor edits go back to review; staff edits keep current status.
+        ...(staff
           ? {}
           : { approvalStatus: ApprovalStatus.PENDING_REVIEW, publishedAt: null }),
         amenities: { set: values.amenityIds.map((aid) => ({ id: aid })) },
@@ -192,8 +193,7 @@ export async function deleteProperty(id: string): Promise<ActionResult> {
   });
   if (!existing) return { success: false, error: "Propiedad no encontrada" };
 
-  const isAdmin = actor.role === UserRole.ADMIN;
-  if (!isAdmin && existing.realtorId !== actor.id) {
+  if (!isStaff(actor.role) && existing.realtorId !== actor.id) {
     return { success: false, error: "No autorizado" };
   }
 
@@ -204,7 +204,7 @@ export async function deleteProperty(id: string): Promise<ActionResult> {
 
 export async function approveProperty(id: string): Promise<ActionResult> {
   const actor = await getActor();
-  if (!actor || actor.role !== UserRole.ADMIN) {
+  if (!actor || !isStaff(actor.role)) {
     return { success: false, error: "No autorizado" };
   }
 
@@ -247,7 +247,7 @@ export async function rejectProperty(
   reason: string
 ): Promise<ActionResult> {
   const actor = await getActor();
-  if (!actor || actor.role !== UserRole.ADMIN) {
+  if (!actor || !isStaff(actor.role)) {
     return { success: false, error: "No autorizado" };
   }
 

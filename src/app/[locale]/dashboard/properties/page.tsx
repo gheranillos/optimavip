@@ -5,7 +5,8 @@ import { Plus, ImageOff, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { requireApprovedRealtor } from "@/lib/auth-guard";
 import { listDashboardProperties } from "@/lib/data/property";
-import { UserRole, ApprovalStatus } from "@/generated/prisma/enums";
+import { ApprovalStatus } from "@/generated/prisma/enums";
+import { isStaff } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,7 +38,7 @@ export default async function PropertiesPage({
   setRequestLocale(locale);
 
   const user = await requireApprovedRealtor();
-  const isAdmin = user.role === UserRole.ADMIN;
+  const isAdmin = isStaff(user.role);
 
   const [t, tp, tStatus, properties] = await Promise.all([
     getTranslations("PropertyList"),

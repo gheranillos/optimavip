@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { UserRole, RealtorStatus, NotificationType } from "@/generated/prisma/enums";
+import { STAFF_ROLES } from "@/lib/roles";
 
 type ActionResult =
   | { success: true }
@@ -45,7 +46,7 @@ export async function registerUser(input: RegisterInput): Promise<ActionResult> 
   if (isRealtor) {
     try {
       const admins = await prisma.user.findMany({
-        where: { role: UserRole.ADMIN },
+        where: { role: { in: STAFF_ROLES }, isActive: true },
         select: { id: true },
       });
       if (admins.length > 0) {
