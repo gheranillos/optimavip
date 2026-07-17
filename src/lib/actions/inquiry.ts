@@ -3,11 +3,40 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { sendEmail } from "@/lib/email";
+import { emailInquiryReceived } from "@/lib/email-templates";
+import { revalidatePath } from "next/cache";
+
 import { inquirySchema, type InquiryInput } from "@/lib/validations/inquiry";
-import { NotificationType } from "@/generated/prisma/enums";
+import {
+  NotificationType,
+  UserRole,
+  InquiryStatus,
+} from "@/generated/prisma/enums";
 
 type ActionResult = { success: true } | { success: false; error: string };
+
+export async function setInquiryStatus(
+  id: string,
+  status: InquiryStatus
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: "No autenticado" };
+
+  const inquiry = await prisma.contactInquiry.findUnique({
+    where: { id },
+    select: { realtorId: true },
+  });
+  if (!inquiry) return { success: false, error: "No encontrada" };
+
+  const isAdmin = session.user.role === UserRole.ADMIN;
+  if (!isAdmin && inquiry.realtorId !== session.user.id) {
+    return { success: false, error: "No autorizado" };
+  }
+
+  await prisma.contactInquiry.update({ where: { id }, data: { status } });
+  revalidatePath("/dashboard/inquiries");
+  return { success: true };
+}
 
 export async function createInquiry(input: InquiryInput): Promise<ActionResult> {
   const parsed = inquirySchema.safeParse(input);
@@ -63,20 +92,14 @@ export async function createInquiry(input: InquiryInput): Promise<ActionResult> 
       select: { email: true, name: true },
     });
     if (realtor?.email) {
-      await sendEmail({
+      await emailInquiryReceived({
         to: realtor.email,
-        subject: "Nueva consulta — OPTIMA VIP",
-        replyTo: data.email || undefined,
-        html: `
-          <p>Hola ${realtor.name ?? ""},</p>
-          <p>Recibiste una nueva consulta${propertyTitle ? ` por <strong>${propertyTitle}</strong>` : ""}:</p>
-          <ul>
-            <li><strong>Nombre:</strong> ${data.name}</li>
-            <li><strong>Teléfono:</strong> ${data.phone}</li>
-            ${data.email ? `<li><strong>Email:</strong> ${data.email}</li>` : ""}
-          </ul>
-          <p>${data.message}</p>
-        `,
+        realtorName: realtor.name,
+        clientName: data.name,
+        phone: data.phone,
+        email: data.email || null,
+        message: data.message,
+        propertyTitle,
       }).catch(() => undefined);
     }
   }

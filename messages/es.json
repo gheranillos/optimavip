@@ -102,7 +102,8 @@
     "sortViews": "Más vistas",
     "results": "{count, plural, =0 {Sin resultados} one {# resultado} other {# resultados}}",
     "noResults": "No se encontraron propiedades con esos criterios.",
-    "saveSearch": "Guardar búsqueda"
+    "saveSearch": "Guardar búsqueda",
+    "searchSaved": "Búsqueda guardada. Te avisaremos por email."
   },
   "Auth": {
     "loginTitle": "Iniciar sesión",
@@ -224,7 +225,98 @@
     "reasonPlaceholder": "Motivo del rechazo...",
     "cancel": "Cancelar",
     "deleteTitle": "Eliminar propiedad",
-    "deleteDesc": "Esta acción no se puede deshacer."
+    "deleteDesc": "Esta acción no se puede deshacer.",
+    "reportClosure": "Reportar cierre"
+  },
+  "Realtors": {
+    "title": "Asesores",
+    "empty": "No hay asesores registrados.",
+    "colName": "Nombre",
+    "colContact": "Contacto",
+    "colProperties": "Propiedades",
+    "colStatus": "Estado",
+    "colActions": "Acciones",
+    "statusPending": "Pendiente",
+    "statusApproved": "Aprobado",
+    "statusRejected": "Rechazado",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "done": "Hecho"
+  },
+  "Inquiries": {
+    "title": "Consultas",
+    "empty": "No hay consultas todavía.",
+    "about": "Sobre",
+    "statusNew": "Nueva",
+    "statusRead": "Leída",
+    "statusArchived": "Archivada",
+    "markRead": "Marcar leída",
+    "archive": "Archivar",
+    "whatsapp": "WhatsApp"
+  },
+  "SavedSearches": {
+    "title": "Búsquedas guardadas",
+    "empty": "No tienes búsquedas guardadas.",
+    "browse": "Explorar propiedades",
+    "unnamed": "Búsqueda sin nombre",
+    "allProperties": "Todas las propiedades",
+    "apply": "Aplicar",
+    "deleted": "Búsqueda eliminada"
+  },
+  "Closures": {
+    "title": "Reportes de cierre",
+    "empty": "No hay cierres reportados.",
+    "types": {
+      "RESERVED": "Reservada",
+      "SOLD": "Vendida",
+      "RENTED": "Alquilada"
+    },
+    "approveTestimonial": "Aprobar testimonio",
+    "revokeTestimonial": "Quitar de casos de éxito",
+    "dialogTitle": "Reportar cierre",
+    "dialogDesc": "Al reportar el cierre, la propiedad deja de ser pública.",
+    "finalPrice": "Precio final",
+    "clientName": "Nombre del cliente",
+    "notes": "Notas",
+    "useAsTestimonial": "Usar como testimonio",
+    "testimonialText": "Texto del testimonio",
+    "submit": "Reportar",
+    "saved": "Cierre reportado"
+  },
+  "Notifications": {
+    "title": "Notificaciones",
+    "empty": "No tienes notificaciones.",
+    "unread": "{count, plural, one {# sin leer} other {# sin leer}}",
+    "markRead": "Marcar leída",
+    "markAllRead": "Marcar todas leídas",
+    "allRead": "Todas marcadas como leídas",
+    "delete": "Eliminar",
+    "deleted": "Notificación eliminada"
+  },
+  "Settings": {
+    "title": "Configuración",
+    "profileTitle": "Tu perfil",
+    "profileDesc": "Estos datos se muestran a clientes cuando te contactan.",
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "whatsapp": "WhatsApp",
+    "agency": "Agencia",
+    "bio": "Biografía",
+    "save": "Guardar cambios",
+    "saved": "Perfil actualizado"
+  },
+  "Users": {
+    "title": "Usuarios",
+    "empty": "No hay usuarios.",
+    "colName": "Nombre",
+    "colRole": "Rol",
+    "colContact": "Contacto",
+    "colActivity": "Actividad",
+    "colJoined": "Alta"
+  },
+  "SuccessCases": {
+    "subtitle": "Historias reales de clientes que cerraron con OPTIMA VIP.",
+    "empty": "Pronto publicaremos nuestros casos de éxito."
   },
   "Contact": {
     "name": "Nombre",

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreHorizontal, Pencil, Check, X, Trash2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Check,
+  X,
+  Trash2,
+  Handshake,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -28,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ClosureReportDialog } from "@/components/dashboard/closure-report-dialog";
 
 export function PropertyActions({
   id,
@@ -43,6 +51,7 @@ export function PropertyActions({
   const [isRunning, startTransition] = useTransition();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [closureOpen, setClosureOpen] = useState(false);
   const [reason, setReason] = useState("");
 
   function run(fn: () => Promise<{ success: boolean; error?: string }>) {
@@ -86,6 +95,11 @@ export function PropertyActions({
             </>
           ) : null}
 
+          <DropdownMenuItem onClick={() => setClosureOpen(true)}>
+            <Handshake className="size-4" />
+            {t("reportClosure")}
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -96,6 +110,12 @@ export function PropertyActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <ClosureReportDialog
+        propertyId={id}
+        open={closureOpen}
+        onOpenChange={setClosureOpen}
+      />
 
       {/* Reject dialog */}
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>

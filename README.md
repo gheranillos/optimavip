@@ -12,7 +12,7 @@ alcance global. Construida para desplegarse en **Vercel** (serverless).
 - **next-intl v4** — i18n con rutas `/es` y `/en` (arquitectura lista para más idiomas)
 - **React Hook Form + Zod** — formularios y validación
 - **Resend** (email), **Telegram Bot API** (webhook serverless), notificaciones in-app (tabla en DB)
-- **Vercel Blob** (imágenes/video), **Google Maps** (`@vis.gl/react-google-maps`)
+- **Vercel Blob** (imágenes/video), **Leaflet + OpenStreetMap** (mapas sin API key de pago)
 
 ## Requisitos
 
@@ -118,9 +118,10 @@ Notas:
 
 1. Importa el repo en Vercel.
 2. Configura las variables de entorno (ver `.env.example`): `DATABASE_URL`
-   (usa la cadena **pooled** de Neon), `AUTH_SECRET`, `GOOGLE_MAPS_API_KEY`,
-   `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, `RESEND_API_KEY`, `TELEGRAM_BOT_TOKEN`,
-   `TELEGRAM_WEBHOOK_SECRET`, `BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`.
+   (usa la cadena **pooled** de Neon), `AUTH_SECRET`, `RESEND_API_KEY`,
+   `EMAIL_FROM`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`,
+   `BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`. Los mapas usan Leaflet/OSM (sin
+   API key de Google).
 3. `vercel.json` ya define el cron diario para `/api/cron/search-alerts` y la
    región `iad1`.
 4. El comando de build ejecuta `prisma generate` (via `postinstall`). Aplica las
@@ -129,22 +130,26 @@ Notas:
 
 ## Estado (MVP)
 
-Completado en este entregable:
+Completado:
 
 - [x] Proyecto Next.js + TS + Tailwind + shadcn/ui (tema azul/plateado)
 - [x] Prisma schema completo + cliente + seed (zonas, amenidades, admin)
 - [x] NextAuth v5, 3 roles, registro (cliente libre / realtor con aprobación)
 - [x] Guards de protección por rol + estructura App Router `/es` `/en`
-- [x] Estructura pública, auth y dashboard (shell) responsive
-- [x] Endpoints serverless: webhook Telegram, cron alertas, subida Blob
+- [x] Listado público + ficha + contacto (DB + WhatsApp) + mapa Leaflet/OSM
+- [x] CRUD de propiedades + hasta 20 fotos (Vercel Blob) + aprobación admin
+- [x] Aprobar/rechazar asesores (admin)
+- [x] Bandeja de consultas/leads
+- [x] Favoritos del cliente
+- [x] Búsquedas guardadas + alertas por email (cron)
+- [x] Reportes de cierre + testimonios / casos de éxito
+- [x] Emails transaccionales (Resend)
+- [x] Notificaciones in-app + configuración de perfil
+- [x] Listado de usuarios (admin)
 - [x] `vercel.json` + `.env.example`
 
-Siguientes fases (arquitectura ya preparada):
+Pendiente / fase 2:
 
-- [ ] CRUD de propiedades + carga de hasta 20 fotos (Blob)
-- [ ] Búsqueda con filtros + mapa con clustering
-- [ ] Ficha de propiedad + contacto (formulario + WhatsApp)
-- [ ] Panel admin (aprobaciones, estadísticas)
-- [ ] Emails transaccionales (Resend) y alertas automáticas (cron)
-- [ ] Bot de Telegram (fase 2) y tour 360°
+- [ ] Bot de Telegram (webhook)
+- [ ] Tour 360° enriquecido / clustering avanzado en mapa
 ```

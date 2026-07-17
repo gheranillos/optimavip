@@ -5,6 +5,7 @@ import { Bed, Bath, Maximize, MapPin, ImageOff, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { FavoriteButton } from "@/components/property/favorite-button";
 import type { PublicPropertyCard } from "@/lib/data/public-property";
 import type { ListingMode } from "@/generated/prisma/enums";
 
@@ -14,7 +15,17 @@ const MODE_KEY: Record<ListingMode, string> = {
   BUY: "forBuy",
 };
 
-export async function PropertyCard({ item }: { item: PublicPropertyCard }) {
+export async function PropertyCard({
+  item,
+  showFavorite = false,
+  isFavorite = false,
+  isAuthenticated = false,
+}: {
+  item: PublicPropertyCard;
+  showFavorite?: boolean;
+  isFavorite?: boolean;
+  isAuthenticated?: boolean;
+}) {
   const t = await getTranslations("Property");
   const cover = item.images[0]?.url;
 
@@ -24,6 +35,13 @@ export async function PropertyCard({ item }: { item: PublicPropertyCard }) {
       className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        {showFavorite ? (
+          <FavoriteButton
+            propertyId={item.id}
+            initialFavorite={isFavorite}
+            isAuthenticated={isAuthenticated}
+          />
+        ) : null}
         {cover ? (
           <Image
             src={cover}

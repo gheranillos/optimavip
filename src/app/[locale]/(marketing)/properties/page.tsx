@@ -1,13 +1,16 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { SearchX } from "lucide-react";
 
+import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
 import {
   parseFilters,
   searchProperties,
   getActiveZones,
 } from "@/lib/data/public-property";
+import { getUserFavoriteIds } from "@/lib/data/favorite";
 import { PropertyCard } from "@/components/property/property-card";
+import { SaveSearchButton } from "@/components/property/save-search-button";
 import { PropertyFilters } from "@/components/property/property-filters";
 import { SortSelect } from "@/components/property/sort-select";
 import { Button } from "@/components/ui/button";
@@ -25,12 +28,17 @@ export default async function PropertiesPage({
   const sp = await searchParams;
   const filters = parseFilters(sp);
 
-  const [t, tSearch, zones, result] = await Promise.all([
+  const session = await auth();
+  const [t, tSearch, zones, result, favoriteIds] = await Promise.all([
     getTranslations("Nav"),
     getTranslations("Search"),
     getActiveZones(),
     searchProperties(filters),
+    session?.user?.id
+      ? getUserFavoriteIds(session.user.id)
+      : Promise.resolve(new Set<string>()),
   ]);
+  const isAuthenticated = !!session?.user;
 
   // Build query strings for pagination while preserving current filters.
   const baseQuery: Record<string, string> = {};
@@ -57,7 +65,10 @@ export default async function PropertiesPage({
                 {tSearch("results", { count: result.total })}
               </p>
             </div>
-            <SortSelect />
+            <div className="flex items-center gap-2">
+              {isAuthenticated ? <SaveSearchButton /> : null}
+              <SortSelect />
+            </div>
           </div>
 
           {result.items.length === 0 ? (
@@ -69,7 +80,13 @@ export default async function PropertiesPage({
             <>
               <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 {result.items.map((item) => (
-                  <PropertyCard key={item.id} item={item} />
+                  <PropertyCard
+                    key={item.id}
+                    item={item}
+                    showFavorite
+                    isAuthenticated={isAuthenticated}
+                    isFavorite={favoriteIds.has(item.id)}
+                  />
                 ))}
               </div>
 

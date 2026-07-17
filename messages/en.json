@@ -102,7 +102,8 @@
     "sortViews": "Most viewed",
     "results": "{count, plural, =0 {No results} one {# result} other {# results}}",
     "noResults": "No properties found with those criteria.",
-    "saveSearch": "Save search"
+    "saveSearch": "Save search",
+    "searchSaved": "Search saved. We'll email you about new matches."
   },
   "Auth": {
     "loginTitle": "Log in",
@@ -224,7 +225,98 @@
     "reasonPlaceholder": "Rejection reason...",
     "cancel": "Cancel",
     "deleteTitle": "Delete property",
-    "deleteDesc": "This action cannot be undone."
+    "deleteDesc": "This action cannot be undone.",
+    "reportClosure": "Report closure"
+  },
+  "Realtors": {
+    "title": "Realtors",
+    "empty": "No realtors registered yet.",
+    "colName": "Name",
+    "colContact": "Contact",
+    "colProperties": "Properties",
+    "colStatus": "Status",
+    "colActions": "Actions",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "approve": "Approve",
+    "reject": "Reject",
+    "done": "Done"
+  },
+  "Inquiries": {
+    "title": "Inquiries",
+    "empty": "No inquiries yet.",
+    "about": "About",
+    "statusNew": "New",
+    "statusRead": "Read",
+    "statusArchived": "Archived",
+    "markRead": "Mark as read",
+    "archive": "Archive",
+    "whatsapp": "WhatsApp"
+  },
+  "SavedSearches": {
+    "title": "Saved searches",
+    "empty": "You have no saved searches.",
+    "browse": "Browse properties",
+    "unnamed": "Unnamed search",
+    "allProperties": "All properties",
+    "apply": "Apply",
+    "deleted": "Search deleted"
+  },
+  "Closures": {
+    "title": "Closure reports",
+    "empty": "No closures reported yet.",
+    "types": {
+      "RESERVED": "Reserved",
+      "SOLD": "Sold",
+      "RENTED": "Rented"
+    },
+    "approveTestimonial": "Approve testimonial",
+    "revokeTestimonial": "Remove from success cases",
+    "dialogTitle": "Report closure",
+    "dialogDesc": "Reporting a closure removes the property from public listings.",
+    "finalPrice": "Final price",
+    "clientName": "Client name",
+    "notes": "Notes",
+    "useAsTestimonial": "Use as testimonial",
+    "testimonialText": "Testimonial text",
+    "submit": "Report",
+    "saved": "Closure reported"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "empty": "You have no notifications.",
+    "unread": "{count, plural, one {# unread} other {# unread}}",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "allRead": "All marked as read",
+    "delete": "Delete",
+    "deleted": "Notification deleted"
+  },
+  "Settings": {
+    "title": "Settings",
+    "profileTitle": "Your profile",
+    "profileDesc": "These details are shown to clients when they contact you.",
+    "name": "Name",
+    "phone": "Phone",
+    "whatsapp": "WhatsApp",
+    "agency": "Agency",
+    "bio": "Bio",
+    "save": "Save changes",
+    "saved": "Profile updated"
+  },
+  "Users": {
+    "title": "Users",
+    "empty": "No users yet.",
+    "colName": "Name",
+    "colRole": "Role",
+    "colContact": "Contact",
+    "colActivity": "Activity",
+    "colJoined": "Joined"
+  },
+  "SuccessCases": {
+    "subtitle": "Real stories from clients who closed with OPTIMA VIP.",
+    "empty": "We'll publish our success cases soon."
   },
   "Contact": {
     "name": "Name",

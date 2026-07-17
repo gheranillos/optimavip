@@ -15,12 +15,15 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 
+import { auth } from "@/auth";
 import {
   getPublicPropertyBySlug,
   incrementPropertyViews,
 } from "@/lib/data/public-property";
+import { isFavorited } from "@/lib/data/favorite";
 import { formatPrice } from "@/lib/format";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { FavoriteButton } from "@/components/property/favorite-button";
 import type { ListingMode } from "@/generated/prisma/enums";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,9 +66,13 @@ export default async function PropertyDetailPage({
 
   await incrementPropertyViews(property.id);
 
-  const [t, tc] = await Promise.all([
+  const session = await auth();
+  const [t, tc, favorited] = await Promise.all([
     getTranslations("Property"),
     getTranslations("Contact"),
+    session?.user?.id
+      ? isFavorited(session.user.id, property.id)
+      : Promise.resolve(false),
   ]);
 
   const realtor = property.realtor;
@@ -269,6 +276,12 @@ export default async function PropertyDetailPage({
                     </a>
                   </Button>
                 ) : null}
+                <FavoriteButton
+                  propertyId={property.id}
+                  initialFavorite={favorited}
+                  isAuthenticated={!!session?.user}
+                  variant="full"
+                />
               </CardContent>
             </Card>
 
